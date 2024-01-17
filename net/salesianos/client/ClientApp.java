@@ -5,7 +5,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import net.salesianos.client.threads.ServerListener;
@@ -22,6 +21,7 @@ public class ClientApp {
 
         ObjectOutputStream objOutStream = new ObjectOutputStream(socket.getOutputStream());
         objOutStream.writeUTF(username);
+        objOutStream.flush();
         
         ObjectInputStream objInStream = new ObjectInputStream(socket.getInputStream());
         ServerListener serverListener = new ServerListener(objInStream);

@@ -38,17 +38,21 @@ public class ClientHandler extends Thread {
       ArrayList<String> list = chat.getChatList();
 
       for (String string : list) {
-        this.clientObjOutStream.writeObject(list);;
+        this.clientObjOutStream.writeObject(string);;
       }
 
       while (true) {
         Message msgObj = (Message) this.clientObjInStream.readObject();
-        msg = msgObj.getMessage();
-        for (ObjectOutputStream otherObjOutputStream : connectedObjOutputStreamList){
-          if(msg != null && msg.startsWith("msg:") && otherObjOutputStream != this.clientObjOutStream){
-            msgObj.setMessage(msgObj.getMessage().substring(4));
-            otherObjOutputStream.writeObject(msgObj.getFormattedMessage());
-            chat.addMessage(msgObj.getFormattedMessage());
+        System.out.println(msgObj.getFormattedMessage());
+        if(msgObj.getMessage().startsWith("msg:")){
+          msgObj.setMessage(msgObj.getMessage().substring(4));
+          for (ObjectOutputStream otherObjOutputStream : connectedObjOutputStreamList){
+            if(msg != null && otherObjOutputStream != this.clientObjOutStream){
+              otherObjOutputStream.writeObject(msgObj.getFormattedMessage());
+            }else{
+              chat.addMessage(msgObj.getFormattedMessage());
+              System.out.println(msgObj.getFormattedMessage());
+            }
           }
         }
       }
