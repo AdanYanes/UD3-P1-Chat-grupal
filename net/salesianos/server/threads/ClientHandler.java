@@ -8,14 +8,10 @@ import java.util.ArrayList;
 
 import net.salesianos.models.Message;
 
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter; 
-
 public class ClientHandler extends Thread {
   private ObjectInputStream clientObjInStream;
   private ObjectOutputStream clientObjOutStream;
   private ArrayList<ObjectOutputStream> connectedObjOutputStreamList;
-  private ArrayList<Message> msgList = new ArrayList<>();
   private String msg = "";
 
   public ClientHandler(ObjectInputStream clientObjInStream, ObjectOutputStream clientObjOutStream,
@@ -36,20 +32,12 @@ public class ClientHandler extends Thread {
 
       username = this.clientObjInStream.readUTF();
 
-      if(!msgList.isEmpty()){
-        this.clientObjOutStream.writeObject(msgList);
-      }
-
       while (true) {
         Message msgObj = (Message) this.clientObjInStream.readObject();
         msg = msgObj.getMessage();
         for (ObjectOutputStream otherObjOutputStream : connectedObjOutputStreamList){
-          if(msg.startsWith("msg:")){
+          if(msg != null && msg.startsWith("msg:") && otherObjOutputStream != this.clientObjOutStream){
             msgObj.setMessage(msgObj.getMessage().substring(4));
-            msgList.add(msgObj);
-          }
-          if(otherObjOutputStream != this.clientObjOutStream){
-            System.out.println(msgObj.getFormattedMessage());
             otherObjOutputStream.writeObject(msgObj);
           }
         }
