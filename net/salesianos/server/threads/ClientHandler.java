@@ -7,18 +7,21 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 import net.salesianos.models.Message;
+import net.salesianos.utils.Chat;
 
 public class ClientHandler extends Thread {
   private ObjectInputStream clientObjInStream;
   private ObjectOutputStream clientObjOutStream;
   private ArrayList<ObjectOutputStream> connectedObjOutputStreamList;
   private String msg = "";
+  Chat chat;
 
   public ClientHandler(ObjectInputStream clientObjInStream, ObjectOutputStream clientObjOutStream,
-      ArrayList<ObjectOutputStream> connectedObjOutputStreamList) {
+      ArrayList<ObjectOutputStream> connectedObjOutputStreamList, Chat chat) {
     this.clientObjInStream = clientObjInStream;
     this.clientObjOutStream = clientObjOutStream;
     this.connectedObjOutputStreamList = connectedObjOutputStreamList;
+    this.chat = chat;
   }
 
   public String getMsg(){
@@ -32,6 +35,12 @@ public class ClientHandler extends Thread {
 
       username = this.clientObjInStream.readUTF();
 
+      ArrayList<String> list = chat.getChatList();
+
+      for (String string : list) {
+        this.clientObjOutStream.writeObject(list);;
+      }
+
       while (true) {
         Message msgObj = (Message) this.clientObjInStream.readObject();
         msg = msgObj.getMessage();
@@ -39,6 +48,7 @@ public class ClientHandler extends Thread {
           if(msg != null && msg.startsWith("msg:") && otherObjOutputStream != this.clientObjOutStream){
             msgObj.setMessage(msgObj.getMessage().substring(4));
             otherObjOutputStream.writeObject(msgObj.getFormattedMessage());
+            chat.addMessage(msgObj.getFormattedMessage());
           }
         }
       }
