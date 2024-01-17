@@ -17,8 +17,8 @@ public class ServerListener extends Thread{
         try {
 
             while (true) {
-                Message newMsg = (Message) this.objInStream.readObject();
-                System.out.println(newMsg.getFormattedMessage());
+                String newMsg = (String) this.objInStream.readObject();
+                System.out.println(newMsg);
             }
         } catch (ClassNotFoundException e1) {
             System.out.println("No se puede crear el mensaje");

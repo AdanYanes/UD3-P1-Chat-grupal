@@ -38,7 +38,7 @@ public class ClientHandler extends Thread {
         for (ObjectOutputStream otherObjOutputStream : connectedObjOutputStreamList){
           if(msg != null && msg.startsWith("msg:") && otherObjOutputStream != this.clientObjOutStream){
             msgObj.setMessage(msgObj.getMessage().substring(4));
-            otherObjOutputStream.writeObject(msgObj);
+            otherObjOutputStream.writeObject(msgObj.getFormattedMessage());
           }
         }
       }
