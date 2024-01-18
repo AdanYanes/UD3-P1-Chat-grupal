@@ -13,7 +13,6 @@ public class ClientHandler extends Thread {
   private ObjectInputStream clientObjInStream;
   private ObjectOutputStream clientObjOutStream;
   private ArrayList<ObjectOutputStream> connectedObjOutputStreamList;
-  private String msg = "";
   Chat chat;
 
   public ClientHandler(ObjectInputStream clientObjInStream, ObjectOutputStream clientObjOutStream,
@@ -24,10 +23,6 @@ public class ClientHandler extends Thread {
     this.chat = chat;
   }
 
-  public String getMsg(){
-    return msg;
-  }
-
   @Override
   public void run() {
     String username = "";
@@ -35,18 +30,19 @@ public class ClientHandler extends Thread {
 
       username = this.clientObjInStream.readUTF();
 
-      ArrayList<String> list = chat.getChatList();
+      ArrayList<String> msgList = chat.getChatList();
 
-      String msg = "Bienvenido al chat grupal " + username + "\n";
-      msg += "El historial de mensajes es:";
+      this.clientObjOutStream.writeObject("Bienvenido al chat grupal " + username);
 
-      for (String string : list) {
-        this.clientObjOutStream.writeObject(string);;
+      if(!msgList.isEmpty()){
+        this.clientObjOutStream.writeObject("El historial de mensajes es:");
+        for (String msg : msgList) {
+          this.clientObjOutStream.writeObject(msg);;
+        }
       }
 
       while (true) {
         Message msgObj = (Message) this.clientObjInStream.readObject();
-        System.out.println(msgObj.getFormattedMessage());
         if(msgObj.getMessage().startsWith("msg:")){
           msgObj.setMessage(msgObj.getMessage().substring(4));
           for (ObjectOutputStream otherObjOutputStream : connectedObjOutputStreamList){
@@ -54,7 +50,6 @@ public class ClientHandler extends Thread {
               otherObjOutputStream.writeObject(msgObj.getFormattedMessage());
             }else{
               chat.addMessage(msgObj.getFormattedMessage());
-              System.out.println(msgObj.getFormattedMessage());
             }
           }
         }else{
@@ -66,7 +61,7 @@ public class ClientHandler extends Thread {
       this.connectedObjOutputStreamList.remove(this.clientObjOutStream);
       System.out.println("CERRANDO CONEXIÓN CON " + username.toUpperCase());
       for (ObjectOutputStream otherObjOutputStream : connectedObjOutputStreamList){
-        if(msg != null && otherObjOutputStream != this.clientObjOutStream){
+        if(otherObjOutputStream != this.clientObjOutStream){
           try {
             otherObjOutputStream.writeObject(username + " se ha desconectado");
           } catch (IOException e) {
