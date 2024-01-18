@@ -37,6 +37,9 @@ public class ClientHandler extends Thread {
 
       ArrayList<String> list = chat.getChatList();
 
+      String msg = "Bienvenido al chat grupal " + username + "\n";
+      msg += "El historial de mensajes es:";
+
       for (String string : list) {
         this.clientObjOutStream.writeObject(string);;
       }
@@ -47,19 +50,31 @@ public class ClientHandler extends Thread {
         if(msgObj.getMessage().startsWith("msg:")){
           msgObj.setMessage(msgObj.getMessage().substring(4));
           for (ObjectOutputStream otherObjOutputStream : connectedObjOutputStreamList){
-            if(msg != null && otherObjOutputStream != this.clientObjOutStream){
+            if(otherObjOutputStream != this.clientObjOutStream){
               otherObjOutputStream.writeObject(msgObj.getFormattedMessage());
             }else{
               chat.addMessage(msgObj.getFormattedMessage());
               System.out.println(msgObj.getFormattedMessage());
             }
           }
+        }else{
+          System.out.println("Controlar los nulos");
         }
       }
 
     } catch (EOFException eofException) {
       this.connectedObjOutputStreamList.remove(this.clientObjOutStream);
       System.out.println("CERRANDO CONEXIÓN CON " + username.toUpperCase());
+      for (ObjectOutputStream otherObjOutputStream : connectedObjOutputStreamList){
+        if(msg != null && otherObjOutputStream != this.clientObjOutStream){
+          try {
+            otherObjOutputStream.writeObject(username + " se ha desconectado");
+          } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+        }
+      }
     } catch (IOException | ClassNotFoundException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
