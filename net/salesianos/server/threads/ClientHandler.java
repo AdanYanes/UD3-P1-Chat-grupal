@@ -53,7 +53,7 @@ public class ClientHandler extends Thread {
             }
           }
         }else{
-          System.out.println("Controlar los nulos");
+          clientObjOutStream.writeObject("Error de formato en el mensaje");
         }
       }
 
