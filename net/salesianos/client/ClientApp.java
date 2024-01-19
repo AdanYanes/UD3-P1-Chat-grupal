@@ -5,7 +5,6 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import net.salesianos.client.threads.ServerListener;
@@ -13,8 +12,9 @@ import net.salesianos.models.Message;
 
 public class ClientApp {
     public static void main(String[] args) throws Exception {
-        int userOption = 0;
         final Scanner SCANNER = new Scanner(System.in);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        int userOption = 0;
         
         System.out.println("¿Cómo te llamas?");
         String username = SCANNER.nextLine();
@@ -22,13 +22,13 @@ public class ClientApp {
 
         ObjectOutputStream objOutStream = new ObjectOutputStream(socket.getOutputStream());
         objOutStream.writeUTF(username);
+        objOutStream.flush();
         
         ObjectInputStream objInStream = new ObjectInputStream(socket.getInputStream());
         ServerListener serverListener = new ServerListener(objInStream);
         serverListener.start();
 
         while (userOption != -1) {
-            System.out.println("Indique el mensaje: ");
             Message msg = new Message();
             msg.setName(username);
             String content = SCANNER.nextLine();
@@ -37,9 +37,9 @@ public class ClientApp {
                 userOption = -1;
             }else{
                 msg.setMessage(content);
-                msg.setDate(LocalTime.now().format(DateTimeFormatter.ISO_TIME));
+                msg.setDate(LocalTime.now().format(formatter));
+                objOutStream.writeObject(msg);
             }
-            objOutStream.writeObject(msg);
         }
         SCANNER.close();
         objOutStream.close();
